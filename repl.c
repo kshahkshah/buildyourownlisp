@@ -78,6 +78,21 @@ lval* lval_sexpr(void) {
   return s;
 }
 
+#define LASSERT(args, cond, err) if (!(cond)) { lval_del(args); return lval_err(err); }
+
+lval* lval_take(lval* val, int index);
+lval* lval_eval(lval* val);
+lval* lval_eval_sexpr(lval* expression);
+
+lval* builtin_op(lval* a, char* op);
+lval* builtin_max(lval* a);
+lval* builtin_min(lval* a);
+lval* builtin_eval(lval* a);
+lval* builtin_list(lval* a);
+lval* builtin_join(lval* a);
+lval* builtin_tail(lval* a);
+lval* builtin_head(lval* a);
+
 lval* lval_pop(lval* expression, int index) {
   // store our target pointer value
   lval* value = expression->cell[index];
@@ -119,6 +134,26 @@ void lval_del(lval* v) {
   free(v);
 }
 
+lval* lval_add(lval* list, lval* incoming) {
+  list->count++;
+  list->cell = realloc(list->cell, sizeof(lval*) * list->count);
+  list->cell[list->count - 1] = incoming;
+
+  return list;
+}
+
+lval* lval_join(lval* x, lval* y) {
+
+  /* For each cell in 'y' add it to 'x' */
+  while (y->count) {
+    x = lval_add(x, lval_pop(y, 0));
+  }
+
+  /* Delete the empty 'y' and return 'x' */
+  lval_del(y);  
+  return x;
+}
+
 //
 //
 // PRINTING UTILITY FUNCTIONS
@@ -134,7 +169,7 @@ void lval_print(lval* v) {
     case LVAL_SYM: printf("%s", v->sym); break;
     case LVAL_ERR: printf("Error: %s", v->err); break;
     case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
-    case LVAL_QEXPR: lval_expr_print(v, '(', ')'); break;
+    case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
   }
 }
 
@@ -156,15 +191,143 @@ void lval_expr_print(lval* v, char open, char close) {
   putchar(close);
 }
 
-lval* builtin_op(lval* a, char* op) {
+// straight copied
+lval* builtin_head(lval* a) {
+  LASSERT(a, a->count == 1,
+    "Function 'head' passed too many arguments!");
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
+    "Function 'head' passed incorrect type!");
+  LASSERT(a, a->cell[0]->count != 0,
+    "Function 'head' passed {}!");
+
+  lval* v = lval_take(a, 0);  
+
+  while (v->count > 1) { 
+    lval_del(lval_pop(v, 1));
+  }
+
+  return v;
+}
+
+// straight copied
+lval* builtin_join(lval* a) {
 
   for (int i = 0; i < a->count; i++) {
-    if (a->cell[i]->type != LVAL_NUM) {
-      lval_del(a);
-      // i suppose references can be caught here...
-      return lval_err("Not a Number");
-    }
+    LASSERT(a, a->cell[i]->type == LVAL_QEXPR,
+      "Function 'join' passed incorrect type.");
   }
+
+  lval* x = lval_pop(a, 0);
+
+  while (a->count) {
+    x = lval_join(x, lval_pop(a, 0));
+  }
+
+  lval_del(a);
+  return x;
+}
+
+// straight copied
+lval* builtin_tail(lval* a) {
+  LASSERT(a, a->count == 1,
+    "Function 'tail' passed too many arguments!");
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
+    "Function 'tail' passed incorrect type!");
+  LASSERT(a, a->cell[0]->count != 0,
+    "Function 'tail' passed {}!");
+
+  lval* v = lval_take(a, 0);  
+  lval_del(lval_pop(v, 0));
+  return v;
+}
+
+lval* builtin_list(lval* a) {
+  a->type = LVAL_QEXPR;
+  return a;
+}
+
+// switch from QEXPR -> SEXPR and evaluate a child
+lval* builtin_eval(lval* a) {
+  LASSERT(a, a->count == 1,
+    "Function 'eval' passed too many arguments!");
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
+    "Function 'eval' passed incorrect type!");
+
+  lval* x = lval_take(a, 0);
+  x->type = LVAL_SEXPR;
+  return lval_eval(x);
+}
+
+lval* builtin_min(lval* a) {
+
+  lval* x = lval_pop(a, 0);
+
+  while(a->count > 0) {
+    lval* y = lval_pop(a, 0);
+
+    if (x->num > y->num) {
+      x->num = y->num;
+    }
+
+    lval_del(y);
+  }
+
+  lval_del(a);
+  return x;
+}
+
+lval* builtin_max(lval* a) {
+  lval* x = lval_pop(a, 0);
+
+  while(a->count > 0) {
+    lval* y = lval_pop(a, 0);
+
+    if (y->num > x->num) {
+      x->num = y->num;
+    }
+
+    lval_del(y);
+  }
+
+  lval_del(a);
+  return x;
+}
+
+lval* builtin(lval* a, char* func) {
+
+  // // check to see if we can actually evaluate yet...
+  // for (int i = 0; i < a->count; i++) {
+  //   if (a->cell[i]->type != LVAL_NUM) {
+  //     lval_del(a);
+  //     // i suppose references can be caught here...
+
+  //     // and if there are references 
+  //     // which can not yet be resolved
+  //     // return a quoted expression
+
+  //     // instead of this:
+  //     return lval_err("Not a Number!");
+  //     // which should only be returned if we expected a number based off of the function call
+
+  //   }
+  // }
+
+  if (strcmp("min", func) == 0)  { return builtin_min(a); }
+  if (strcmp("max", func) == 0)  { return builtin_max(a); }
+  if (strcmp("list", func) == 0) { return builtin_list(a); }
+  if (strcmp("head", func) == 0) { return builtin_head(a); }
+  if (strcmp("tail", func) == 0) { return builtin_tail(a); }
+  if (strcmp("join", func) == 0) { return builtin_join(a); }
+  if (strcmp("eval", func) == 0) { return builtin_eval(a); }
+  if (strstr("+-/*^\%", func)) { return builtin_op(a, func); }
+
+  // if not caught free and return!
+  lval_del(a);
+  return lval_err("No Such Function!");
+
+}
+
+lval* builtin_op(lval* a, char* op) {
 
   lval* x = lval_pop(a, 0);
 
@@ -200,18 +363,6 @@ lval* builtin_op(lval* a, char* op) {
     if (strcmp(op, "\%") == 0) {  x->num = (x->num % y->num); }
     if (strcmp(op, "^") == 0)  {  x->num = (powl(x->num, y->num)); }
 
-    // comparison
-    if (strcmp(op, "min") == 0) {
-      if (x->num > y->num) {
-        x->num = y->num;
-      }
-    }
-    if (strcmp(op, "max") == 0) {
-      if (y->num > x->num) {
-        x->num = y->num;
-      }
-    }
-
     // for all these ops we need to discard the argument as
     // we've applied it already and reduced into x
     lval_del(y);
@@ -224,8 +375,6 @@ lval* builtin_op(lval* a, char* op) {
   return x;
 }
 
-lval* lval_eval(lval* val);
-lval* lval_eval_sexpr(lval* expression);
 
 lval* lval_eval(lval* val) {
   if (val->type == LVAL_SEXPR) { return lval_eval_sexpr(val); }
@@ -270,7 +419,7 @@ lval* lval_eval_sexpr(lval* expression) {
   }
 
   // Actually evaluate
-  lval* evaluated = builtin_op(expression, symbol->sym);
+  lval* evaluated = builtin(expression, symbol->sym);
 
   // free the operand
   lval_del(symbol);
@@ -286,13 +435,6 @@ lval* lval_read_num(mpc_ast_t* tree) {
   return errno != ERANGE ? lval_num(x) : lval_err("invalid number");
 }
 
-lval* lval_add(lval* list, lval* incoming) {
-  list->count++;
-  list->cell = realloc(list->cell, sizeof(lval*) * list->count);
-  list->cell[list->count - 1] = incoming;
-
-  return list;
-}
 
 lval* lval_read(mpc_ast_t* tree) {
   if (strstr(tree->tag, "number")) { return lval_read_num(tree); }
@@ -338,8 +480,9 @@ int main(int argc, char** argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
     "                                                                     \
       number   : /-?[0-9]+/ ;                                             \
-      symbol   : '+' | '-' | '*' | '/' | '\%' | '^' | \"min\" | \"max\";  \
-      qexpr    : '{' <expr>* '}' ;                                      \
+      symbol   : '+' | '-' | '*' | '/' | '\%' | '^' | \"min\" | \"max\"   \
+               | \"list\" | \"head\" | \"tail\" | \"join\" | \"eval\" ;   \
+      qexpr    : '{' <expr>* '}' ;                                        \
       sexpr    : '(' <expr>* ')' ;                                        \
       expr     : <number> | <symbol> | <sexpr> | <qexpr>;                 \
       lispy    : /^/ <expr>* /$/ ;                                        \
