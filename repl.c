@@ -5,8 +5,14 @@
 
 #include "mpc.h"
 
+struct lval;
+struct lenv;
+typedef struct lval lval;
+typedef struct lenv lenv;
+
 enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_SEXPR, LVAL_QEXPR };
-enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM, LERR_WRONG_ARGS };
+
+typedef lval*(*lbuiltin)(lenv*, lval*);
 
 typedef struct lval {
   int type;
@@ -15,13 +21,14 @@ typedef struct lval {
   // we need a place to record string data...
   char *err;
   char *sym;
+  lbuiltin fun;
 
   // count is the list length of an s-expression
   int count;
 
   // cell points to other list values' pointers
   struct lval** cell;
-} lval;
+};
 
 // returns a pointer to a number
 // takes the value of the number (long)
@@ -76,6 +83,10 @@ lval* lval_sexpr(void) {
   s->cell = NULL;
 
   return s;
+}
+
+lval* lval_fun(lbuiltin func) {
+
 }
 
 #define LASSERT(args, cond, err) if (!(cond)) { lval_del(args); return lval_err(err); }
@@ -480,8 +491,7 @@ int main(int argc, char** argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
     "                                                                     \
       number   : /-?[0-9]+/ ;                                             \
-      symbol   : '+' | '-' | '*' | '/' | '\%' | '^' | \"min\" | \"max\"   \
-               | \"list\" | \"head\" | \"tail\" | \"join\" | \"eval\" ;   \
+      symbol   : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&^\%]+/ ;                    \
       qexpr    : '{' <expr>* '}' ;                                        \
       sexpr    : '(' <expr>* ')' ;                                        \
       expr     : <number> | <symbol> | <sexpr> | <qexpr>;                 \
