@@ -58,6 +58,9 @@ lval* lenv_get(lenv* env, lval* key);
 void  lenv_put(lenv* env, lval* key, lval* value);
 void  lenv_del(lenv* env);
 
+void lenv_add_builtin(lenv* e, char* name, lbuiltin func);
+void lenv_add_builtins(lenv* e) ;
+
 // lisp read and evaluation
 lval* lval_eval(lenv* env, lval* val);
 lval* lval_eval_sexpr(lenv* env, lval* expr);
@@ -66,3 +69,4 @@ lval* lval_eval_sexpr(lenv* env, lval* expr);
 void lval_print(lval* v);
 void lval_println(lval* v);
 void lval_expr_print(lval* v, char open, char close);
+char* lval_human_name(int t);
