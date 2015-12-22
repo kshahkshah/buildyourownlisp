@@ -41,6 +41,7 @@ void  lval_del(lval* v);
 lval* lval_add(lval* list, lval* incoming);
 lval* lval_join(lval* x, lval* y);
 lval* lval_pop(lval* expression, int index);
+lval* lval_unshift(lval* list, lval* incoming);
 lval* lval_take(lval* val, int index);
 lval* lval_copy(lval* org);
 

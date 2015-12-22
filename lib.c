@@ -66,6 +66,22 @@ lval* builtin_list(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_cons(lenv* env, lval* args) {
+  LASSERT(args, args->cell[0]->type == LVAL_QEXPR,
+    "Error! Functon 'cons' must be passed a quoted expression\n"
+    "But was passed a %s", lval_human_name(args->cell[0]->type));
+
+  lval* list = lval_copy(args->cell[0]);
+
+  while (args->count > 1) {
+    list = lval_unshift(list, lval_copy(lval_pop(args, 1)));
+  }
+
+  lval_del(args);
+
+  return list;
+}
+
 // switch from QEXPR -> SEXPR and evaluate a child
 lval* builtin_eval(lenv* env, lval* a) {
   LASSERT(a, a->count == 1,

@@ -62,10 +62,27 @@ void lval_del(lval* v) {
   free(v);
 }
 
+// in-place modifies list
 lval* lval_add(lval* list, lval* incoming) {
   list->count++;
   list->cell = realloc(list->cell, sizeof(lval*) * list->count);
   list->cell[list->count - 1] = incoming;
+
+  return list;
+}
+
+// in-place modifies list
+lval* lval_unshift(lval* list, lval* incoming) {
+  // make it bigger
+  list->count++;
+  list->cell = realloc(list->cell, sizeof(lval*) * list->count);
+
+  // shift existing memory
+  // arguments are pointer to the destination, the data being copied, the number of bytes to copy
+  memmove(&list->cell[1], &list->cell[0],
+    sizeof(lval*) * (list->count - 1));
+
+  list->cell[0] = incoming;
 
   return list;
 }
