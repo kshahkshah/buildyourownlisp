@@ -66,6 +66,11 @@ lval* builtin_list(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_length(lenv* env, lval* a) {
+  lval* x = lval_num(a->count);
+  return x;
+}
+
 lval* builtin_cons(lenv* env, lval* args) {
   LASSERT(args, args->cell[0]->type == LVAL_QEXPR,
     "Error! Functon 'cons' must be passed a quoted expression\n"

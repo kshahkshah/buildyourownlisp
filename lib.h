@@ -6,6 +6,7 @@ lval* builtin_list(lenv* env, lval* a);
 lval* builtin_eval(lenv* env, lval* a);
 lval* builtin_min(lenv* env, lval* a);
 lval* builtin_max(lenv* env, lval* a);
+lval* builtin_length(lenv* env, lval* a);
 
 // define a variable
 lval* builtin_def(lenv* env, lval* refs_and_vals);

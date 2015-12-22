@@ -92,6 +92,7 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "eval", builtin_eval);
   lenv_add_builtin(e, "join", builtin_join);
   lenv_add_builtin(e, "cons", builtin_cons);
+  lenv_add_builtin(e, "length", builtin_length);
 
   /* Mathematical Functions */
   lenv_add_builtin(e, "+", builtin_add);
