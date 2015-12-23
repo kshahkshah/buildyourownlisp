@@ -21,6 +21,16 @@ lval* lval_num(long x) {
   return v;
 }
 
+// returns a pointer to a signal
+// takes the value of the signal (int)
+lval* lval_sig(int x) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_SIG;
+  v->sig = x;
+
+  return v;
+}
+
 // returns a pointer to an error lval
 // takes a message
 lval* lval_err(char* message, ...) {

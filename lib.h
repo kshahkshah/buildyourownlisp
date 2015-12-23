@@ -8,6 +8,11 @@ lval* builtin_min(lenv* env, lval* a);
 lval* builtin_max(lenv* env, lval* a);
 lval* builtin_length(lenv* env, lval* a);
 
+lval* builtin_locals(lenv* env, lval* a);
+lval* builtin_functions(lenv* env, lval* a);
+lval* builtin_exit(lenv* env, lval* a);
+lval* builtin_exists(lenv* env, lval* a);
+
 // define a variable
 lval* builtin_def(lenv* env, lval* refs_and_vals);
 

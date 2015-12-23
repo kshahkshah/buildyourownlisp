@@ -39,7 +39,7 @@ lval* lenv_get(lenv* env, lval* key) {
       return lval_copy(env->vals[i]);
     }
   }
-  return lval_err("no such symbol");
+  return lval_err("no such function or reference");
 }
 
 void lenv_put(lenv* env, lval* key, lval* value) {
@@ -93,6 +93,10 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "join", builtin_join);
   lenv_add_builtin(e, "cons", builtin_cons);
   lenv_add_builtin(e, "length", builtin_length);
+  lenv_add_builtin(e, "exists", builtin_exists);
+  lenv_add_builtin(e, "locals", builtin_locals);
+  lenv_add_builtin(e, "functions", builtin_functions);
+  lenv_add_builtin(e, "exit", builtin_exit);
 
   /* Mathematical Functions */
   lenv_add_builtin(e, "+", builtin_add);

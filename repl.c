@@ -74,8 +74,10 @@ int main(int argc, char** argv) {
   lenv* env = lenv_new();
   lenv_add_builtins(env);
 
+  int no_exit_signal = 1;
+
   /* In a never ending loop */
-  while (1) {
+  while (no_exit_signal) {
 
     /* Output our prompt and get input */
     char* input = readline("lispy> ");
@@ -99,6 +101,12 @@ int main(int argc, char** argv) {
     /* Free retrieved input */
     free(input);
 
+    lval* quit_signal = lenv_get(env, lval_sym("__quit__"));
+
+    if (quit_signal->type == LVAL_SIG) {
+      // we have an exit signal...
+      no_exit_signal = 0;
+    }
   }
 
   lenv_del(env);

@@ -235,3 +235,57 @@ lval* builtin_mod(lenv* e, lval* a) {
 lval* builtin_exp(lenv* e, lval* a) {
   return builtin_op(e, a, "^");
 }
+
+lval* builtin_locals(lenv* env, lval* a) {
+  // we might as well use the empty qexpr which was passed to us...
+
+  // create symbols and add them to a
+  for(int i = 0; i < env->count; i++) {
+    if (lenv_get(env, lval_sym(env->syms[i]))->type != LVAL_FUN) {
+      a = lval_add(a, lval_sym(env->syms[i]));
+    }
+  }
+
+  return a;
+}
+
+lval* builtin_functions(lenv* env, lval* a) {
+  // we might as well use the empty qexpr which was passed to us...
+
+  // create symbols and add them to a
+  for(int i = 0; i < env->count; i++) {
+    if (lenv_get(env, lval_sym(env->syms[i]))->type == LVAL_FUN) {
+      a = lval_add(a, lval_sym(env->syms[i]));
+    }
+  }
+
+  return a;
+}
+
+// returns 0 or 1 if symbol defined or not
+lval* builtin_exists(lenv* env, lval* a) {
+  // we can only process quoted expressions unfortunately atm
+  // because anything else will be evaluated
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
+    "Error: def passed an unquoted expression!");
+
+  // grab the references (var names)
+  lval* ref = a->cell[0];
+
+  // make sure they are indeed symbols
+  LASSERT(a, ref->cell[0]->type == LVAL_SYM,
+    "Error: def passed invalid symbols!");
+
+  lval* x = lenv_get(env, ref->cell[0]);
+  int e = (x->type == LVAL_ERR) ? 0 : 1;
+  lval_del(x);
+
+  return lval_num(e);
+}
+
+lval* builtin_exit(lenv* env, lval* a) {
+  lenv_put(env, lval_sym("__quit__"), lval_sig(0));
+  lval_del(a);
+
+  return lval_sym("Exiting!");
+}
