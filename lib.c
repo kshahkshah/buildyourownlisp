@@ -89,10 +89,8 @@ lval* builtin_cons(lenv* env, lval* args) {
 
 // switch from QEXPR -> SEXPR and evaluate a child
 lval* builtin_eval(lenv* env, lval* a) {
-  LASSERT(a, a->count == 1,
-    "Function 'eval' passed too many arguments!");
-  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
-    "Function 'eval' passed incorrect type!");
+  LASSERT_ARITY("eval", a, 1);
+  LASSERT_TYPE("eval", a, 0, LVAL_QEXPR);
 
   lval* x = lval_take(a, 0);
   x->type = LVAL_SEXPR;
@@ -135,32 +133,46 @@ lval* builtin_max(lenv* env, lval* a) {
   return x;
 }
 
+lval* builtin_def(lenv* env, lval* a) {
+  return builtin_var(env, a, "def");
+}
+lval* builtin_put(lenv* env, lval* a) {
+  return builtin_var(env, a, "=");
+
 // add variables to the environment
-lval* builtin_def(lenv* env, lval* refs_and_vals) {
+lval* builtin_var(lenv* env, lval* args, char *op) {
   // we can only process quoted expressions unfortunately atm
   // because anything else will be evaluated
-  LASSERT(refs_and_vals, refs_and_vals->cell[0]->type == LVAL_QEXPR,
-    "Error: def passed an unquoted expression!");
+  LASSERT(args, args->cell[0]->type == LVAL_QEXPR,
+    "'%s' passed an unquoted expression!", op);
 
   // grab the references (var names)
-  lval* refs = refs_and_vals->cell[0];
+  lval* refs = args->cell[0];
 
   // make sure they are indeed symbols
   for(int i = 0; i < refs->count; i++) {
-    LASSERT(refs_and_vals, refs->cell[i]->type == LVAL_SYM,
-      "Error: def passed invalid symbols!");
+    LASSERT(args, refs->cell[i]->type == LVAL_SYM,
+      "'%s' passed invalid symbols!", op);
   }
 
   // also make sure we were given the same number of values
-  LASSERT(refs_and_vals, refs->count == refs_and_vals->count-1,
-    "Error: def passed incorrect number of symbols");
+  LASSERT(args, refs->count == args->count-1,
+    "'%s' passed incorrect number of symbols", op);
 
   // iterate over and assign
   for (int i = 0; i < refs->count; i++) {
-    lenv_put(env, refs->cell[i], refs_and_vals->cell[i+1]);
+    // global
+    if (strcmp(op, "def") == 0) {
+      lenv_def(env, refs->cell[i], args->cell[i+1]);
+    }
+
+    // local
+    if (strcmp(op, "=") == 0) {
+      lenv_put(env, refs->cell[i], args->cell[i+1]);
+    }
   }
 
-  lval_del(refs_and_vals);
+  lval_del(args);
   return lval_sexpr();
 }
 
@@ -262,19 +274,46 @@ lval* builtin_functions(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_lambda(lenv* env, lval* a) {
+  // there are two arguments
+  LASSERT_ARITY("lambda", a, 2);
+  // whose type are quoted expressions
+  LASSERT_TYPE("lambda", a, 0, LVAL_QEXPR);
+  LASSERT_TYPE("lambda", a, 1, LVAL_QEXPR);
+
+  // we should be getting passed symbols
+  // which are arguments to the function we are defining
+  // so check that fact
+  for(int i = 0; i < a[0]->count; i++) {
+    // check the type of every child (used defined arg reference)
+    // and give an unhelpful error message if violated
+    LASSERT(a, (a->cell[0]->cell[i]->type == LVAL_SYM),
+      "function definitions only take symbols as arguments, but the argument at index %i is a %s",
+      i, lval_human_name(a->cell[0]-cell[i]->type));
+  }
+
+  // gets copies of the required formal arguments and body
+  lval *formals = lval_pop(a, 0);
+  lval *body = lval_pop(a, 1);
+  // kill what was passed in
+  lval_del(a);
+
+  return lval_lambda(formals, body);
+}
+
 // returns 0 or 1 if symbol defined or not
 lval* builtin_exists(lenv* env, lval* a) {
   // we can only process quoted expressions unfortunately atm
   // because anything else will be evaluated
   LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
-    "Error: def passed an unquoted expression!");
+    "def passed an unquoted expression!");
 
   // grab the references (var names)
   lval* ref = a->cell[0];
 
   // make sure they are indeed symbols
   LASSERT(a, ref->cell[0]->type == LVAL_SYM,
-    "Error: def passed invalid symbols!");
+    "def passed invalid symbols!");
 
   lval* x = lenv_get(env, ref->cell[0]);
   int e = (x->type == LVAL_ERR) ? 0 : 1;

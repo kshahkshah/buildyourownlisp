@@ -87,6 +87,23 @@ lval* lval_sexpr(void) {
 lval* lval_fun(lbuiltin fn) {
   lval* f = malloc(sizeof(lval));
   f->type = LVAL_FUN;
-  f->fun = fn;
+  f->builtin = fn;
+  return f;
+}
+
+lval* lval_lambda(lval* formals, lval* body) {
+  lval* f = malloc(sizeof(lval));
+  f->type = LVAL_FUN;
+
+  // these are user defined functions, not built in ones
+  f->builtin = NULL;
+
+  // vars contained within the scope of the function body;
+  f->env = lenv_new();
+
+  // arguments and fn body
+  f->formals = formals;
+  f->body = body;
+
   return f;
 }

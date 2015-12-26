@@ -7,10 +7,18 @@
 
 void lval_print(lval* v) {
   switch (v->type) {
-    case LVAL_FUN: printf("<function>"); break;
+    case LVAL_FUN:
+      if (v->builtin) {
+        printf("<core-function>");
+      } else {
+        printf("<user-function>");
+        lval_print(v->formals);
+        lval_print(v->body);
+      }
+      break;
     case LVAL_NUM: printf("%li", v->num); break;
     case LVAL_SYM: printf("%s", v->sym); break;
-    case LVAL_ERR: printf("Error: %s", v->err); break;
+    case LVAL_ERR: printf("%s", v->err); break;
     case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
     case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
   }
@@ -37,12 +45,12 @@ void lval_expr_print(lval* v, char open, char close) {
 // we're just mapping enums to a label
 char* lval_human_name(int t) {
   switch(t) {
-    case LVAL_FUN: return "Function";
-    case LVAL_NUM: return "Number";
-    case LVAL_ERR: return "Error";
-    case LVAL_SYM: return "Symbol";
-    case LVAL_SEXPR: return "S-Expression";
-    case LVAL_QEXPR: return "Q-Expression";
+    case LVAL_FUN: return "function";
+    case LVAL_NUM: return "number";
+    case LVAL_ERR: return "error";
+    case LVAL_SYM: return "symbol";
+    case LVAL_SEXPR: return "symbolic expression";
+    case LVAL_QEXPR: return "quoted expression";
     default: return "Unknown";
   }
 }

@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "repl.h"
+#include "lib.h"
 
 //
 //
@@ -40,8 +41,15 @@ lval* lval_take(lval* val, int index) {
 
 void lval_del(lval* v) {
   switch (v->type) {
-    // no extra work is required to delete this data type...
-    case LVAL_FUN: break;
+    case LVAL_FUN:
+      // no extra work is required to delete built-in functions
+      // but user space functions get nuked
+      if (!v->builtin) {
+        lenv_del(v->env);
+        lval_del(v->formals);
+        lval_del(v->body);
+        break;
+      }
     case LVAL_NUM: break;
 
     // we have to free the error message / symbol
@@ -105,7 +113,13 @@ lval* lval_copy(lval* org) {
 
   switch (dup->type) {
     case LVAL_FUN:
-      dup->fun = org->fun;
+      if (org->builtin) {
+        dup->builtin = org->builtin;
+      } else {
+        dup->env = lenv_copy(org->env);
+        dup->formals = lval_copy(org->formals);
+        dup->body = lval_copy(org->body);
+      }
       break;
     case LVAL_NUM:
       dup->num = org->num;
@@ -137,6 +151,52 @@ lval* lval_copy(lval* org) {
 // EVALUATION
 //
 //
+lval* lval_call(lenv* env, lval* fn, lval* args) {
+  // immediately return builtin functions, thats easy
+  if (fn->builtin) {
+    return fn->builtin(env, args);
+  }
+
+  // are we create a new expression or evaluating?
+  int given = args->count;
+  int total = fn->formals->count;
+
+  while(args->count) {
+    if (fn->formals->count == 0) {
+      lval_del(args);
+      return lval_err("function '%s' passed too many arguments, %i for %i",
+               fn->sym, given, total);
+    }
+
+    lval* ref = lval_pop(fn->formals, 0);
+    lval* val = lval_pop(args, 0);
+
+    // place into the functions local environment
+    lenv_put(fn->env, ref, val);
+
+    // then cleanup
+    lval_del(ref);
+    lval_del(val);
+  }
+
+  // everything is bound at this point, clean this up
+  lval_del(args);
+
+  // now actually evaluate
+  if(fn->formals->count == 0) {
+    // we're going to create a new sexpr here,
+    // and in place add a copy of the function body as it's first argument
+    // and builtin_eval will then be able to evaluate that function body
+    // within the context of the environment to which we've just added vars too
+    lval* newexpr = lval_add(lval_sexpr(), lval_copy(fn->body));
+    return builtin_eval(fn->env, newexpr);
+
+  // or return a new expression
+  } else {
+    // return a copy of
+    return lval_copy(fn);
+  }
+}
 
 lval* lval_eval(lenv* env, lval* val) {
   if (val->type == LVAL_SYM) {
@@ -173,13 +233,14 @@ lval* lval_eval_sexpr(lenv* env, lval* expr) {
   lval* fn = lval_pop(expr, 0);
 
   if (fn->type != LVAL_FUN) {
+    lval* err = lval_err("incorrect type found when evaluating a symbolic expression, '%s' is not a function", fn->sym);
     lval_del(fn);
     lval_del(expr);
-    return lval_err("error, not a function");
+    return err;
   }
 
   // Actually evaluate
-  lval* result = fn->fun(env, expr);
+  lval* result = lval_call(env, fn, expr);
 
   // free the operand
   lval_del(fn);

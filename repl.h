@@ -17,7 +17,12 @@ struct lval {
   // we need a place to record string data...
   char *err;
   char *sym;
-  lbuiltin fun;
+
+  // functions
+  lbuiltin builtin;
+  lenv* env;
+  lval* formals;
+  lval* body;
 
   // count is the list length of an s-expression
   int count;
@@ -27,6 +32,7 @@ struct lval {
 };
 
 struct lenv {
+  lenv* parent;
   int count;
   char** syms;
   lval** vals;
@@ -38,6 +44,22 @@ struct lenv {
     lval_del(args); \
     return err; \
   }
+
+// all in turn should call assert which will handle the
+// variable number of arguments in formatting a message
+#define LASSERT_TYPE(function, parent, index, expected) \
+  LASSERT(parent, parent->cell[index]->type == expected, \
+    "Function '%s', passed an unexpected type, you passed a %s when a %s was expected", \
+    function, \
+    lval_human_name(parent[index]->type), \
+    lval_human_name(expected)); \
+
+#define LASSERT_ARITY(function, arguments, expected) \
+  LASSERT(arguments, arguments->count == expected, \
+    "Function '%s', receive wrong number of arguments! %i for %i", \
+    function, \
+    arguments->count, \
+    expected); \
 
 // lisp-value generic instance operations
 void  lval_del(lval* v);
@@ -62,8 +84,9 @@ lenv* lenv_new(void);
 lval* lenv_get(lenv* env, lval* key);
 void  lenv_put(lenv* env, lval* key, lval* value);
 void  lenv_del(lenv* env);
+lenv* lenv_copy(lenv* org);
 
-void lenv_add_builtin(lenv* e, char* name, lbuiltin func);
+void lenv_add_builtin(lenv* e, char* name, lbuiltin builtin);
 void lenv_add_builtins(lenv* e) ;
 
 // lisp read and evaluation

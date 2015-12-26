@@ -12,9 +12,14 @@ lval* builtin_locals(lenv* env, lval* a);
 lval* builtin_functions(lenv* env, lval* a);
 lval* builtin_exit(lenv* env, lval* a);
 lval* builtin_exists(lenv* env, lval* a);
+lval* builtin_lambda(lenv* env, lval* a);
 
-// define a variable
-lval* builtin_def(lenv* env, lval* refs_and_vals);
+// user facing defines
+lval* builtin_def(lenv* e, lval* a);
+lval* builtin_put(lenv* e, lval* a);
+
+// trigger the definition
+lval* builtin_var(lenv* env, lval* args, char* op);
 
 // math
 lval* builtin_add(lenv* e, lval* a);
