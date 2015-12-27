@@ -8,7 +8,7 @@
 
 // straight copied then modified
 lval* builtin_head(lenv* env, lval* a) {
-  LASSERT_ARITY("eval", a, 1);
+  LASSERT_ARITY("head", a, 1);
   LASSERT_TYPE("head", a, 0, LVAL_QEXPR);
   LASSERT(a, a->cell[0]->count != 0, "Function 'head' passed {}!");
 
