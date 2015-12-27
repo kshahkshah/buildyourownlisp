@@ -130,6 +130,59 @@ lval* builtin_max(lenv* env, lval* a) {
   return x;
 }
 
+lval* builtin_gt(lenv* env, lval* a) {
+  LASSERT_ARITY("gt", a, 2);
+
+  if (a->cell[0]->type == LVAL_NUM) {
+    lval* x = lval_pop(a, 0);
+  }
+  if (a->cell[0]->type == LVAL_SYM) {
+    lval* x = lenv_get(env, lval_pop(a, 0));
+
+    if (x->type != LVAL_NUM) {
+      lval* err = lval_err("Wrong argument type supplied to gt, expected %s got %s",
+                    lval_human_name(LVAL_NUM),
+                    lval_human_name(x->type));
+
+      lval_del(x); lval_del(a);
+      return err;
+    }
+  }
+
+  if (a->cell[0]->type == LVAL_NUM) {
+    lval* y = lval_pop(a, 0);
+  }
+  if (a->cell[0]->type == LVAL_SYM) {
+    lval* y = lenv_get(env, lval_pop(a, 0));
+
+    if (y->type != LVAL_NUM) {
+      lval* err = lval_err("Wrong argument type supplied to gt, expected %s got %s",
+                    lval_human_name(LVAL_NUM),
+                    lval_human_name(y->type));
+
+      lval_del(x); lval_del(y); lval_del(a);
+      return err;
+    }
+  }
+
+  lval_del(a);
+
+  if (y->num > x->num) {
+    lval_del(x);
+    return y;
+  } else {
+    lval_del(x);
+    return y;
+  }
+}
+
+lval* builtin_lt(lenv* env, lval* a) {
+
+}
+lval* builtin_if(lenv* env, lval* a) {
+
+}
+
 lval* builtin_def(lenv* env, lval* a) {
   return builtin_var(env, a, "def");
 }
