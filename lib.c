@@ -8,18 +8,9 @@
 
 // straight copied then modified
 lval* builtin_head(lenv* env, lval* a) {
-  LASSERT(a, a->count == 1,
-    "Function 'head' passed too many arguments!"
-    "Received %i, Expected 1", a->count);
-
-  LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
-    "Function 'head' passed incorrect type!"
-    "Received %s, Expected %s",
-    lval_human_name(a->cell[0]->type),
-    lval_human_name(LVAL_QEXPR));
-
-  LASSERT(a, a->cell[0]->count != 0,
-    "Function 'head' passed {}!");
+  LASSERT_ARITY("eval", a, 1);
+  LASSERT_TYPE("head", a, 0, LVAL_QEXPR);
+  LASSERT(a, a->cell[0]->count != 0, "Function 'head' passed {}!");
 
   lval* v = lval_take(a, 0);
 

@@ -295,7 +295,7 @@ lval* lval_eval_sexpr(lenv* env, lval* expr) {
   lval* fn = lval_pop(expr, 0);
 
   if (fn->type != LVAL_FUN) {
-    lval* err = lval_err("incorrect type found when evaluating a symbolic expression, '%s' is not a function", fn->sym);
+    lval* err = lval_err("incorrect type found when evaluating a symbolic expression, '%s' is not a function", lval_human_name(fn->type));
     lval_del(fn);
     lval_del(expr);
     return err;
