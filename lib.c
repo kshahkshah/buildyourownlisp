@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "repl.h"
+#include "lib.h"
 
 // straight copied then modified
 lval* builtin_head(lenv* env, lval* a) {
@@ -138,6 +139,7 @@ lval* builtin_def(lenv* env, lval* a) {
 }
 lval* builtin_put(lenv* env, lval* a) {
   return builtin_var(env, a, "=");
+}
 
 // add variables to the environment
 lval* builtin_var(lenv* env, lval* args, char *op) {
@@ -284,12 +286,12 @@ lval* builtin_lambda(lenv* env, lval* a) {
   // we should be getting passed symbols
   // which are arguments to the function we are defining
   // so check that fact
-  for(int i = 0; i < a[0]->count; i++) {
+  for(int i = 0; i < a->cell[0]->count; i++) {
     // check the type of every child (used defined arg reference)
     // and give an unhelpful error message if violated
     LASSERT(a, (a->cell[0]->cell[i]->type == LVAL_SYM),
       "function definitions only take symbols as arguments, but the argument at index %i is a %s",
-      i, lval_human_name(a->cell[0]-cell[i]->type));
+      i, lval_human_name(a->cell[0]->cell[i]->type));
   }
 
   // gets copies of the required formal arguments and body

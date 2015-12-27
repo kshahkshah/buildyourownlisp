@@ -30,7 +30,7 @@ lenv* lenv_copy(lenv* org) {
   for(int i = 0; i < dup->count; i++) {
     // copy actual bytes here
     dup->syms[i] = malloc(strlen(org->syms[i]) + 1);
-    strcopy(dup->syms[i], org->syms[i]);
+    strcpy(dup->syms[i], org->syms[i]);
     // we can lval_copy and get a pointer to the copied value
     dup->vals[i] = lval_copy(org->vals[i]);
   }
@@ -65,7 +65,7 @@ lval* lenv_get(lenv* env, lval* key) {
 
   // additionally now, crazy town as it is, check the parents environment, recursively
   if(env->parent) {
-    lenv_get(env->parent, key);
+    return lenv_get(env->parent, key);
   } else {
     return lval_err("Unbound Symbol, there is no such function or reference '%s'", key->sym);
   }

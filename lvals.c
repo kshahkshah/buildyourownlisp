@@ -185,9 +185,10 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
   // now actually evaluate
   if(fn->formals->count == 0) {
     // we're going to create a new sexpr here,
-    // and in place add a copy of the function body as it's first argument
+    // and in-place add a copy of the function body as it's first argument
     // and builtin_eval will then be able to evaluate that function body
     // within the context of the environment to which we've just added vars too
+    fn->env->parent = env;
     lval* newexpr = lval_add(lval_sexpr(), lval_copy(fn->body));
     return builtin_eval(fn->env, newexpr);
 

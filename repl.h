@@ -51,15 +51,15 @@ struct lenv {
   LASSERT(parent, parent->cell[index]->type == expected, \
     "Function '%s', passed an unexpected type, you passed a %s when a %s was expected", \
     function, \
-    lval_human_name(parent[index]->type), \
-    lval_human_name(expected)); \
+    lval_human_name(parent->cell[index]->type), \
+    lval_human_name(expected));
 
 #define LASSERT_ARITY(function, arguments, expected) \
   LASSERT(arguments, arguments->count == expected, \
     "Function '%s', receive wrong number of arguments! %i for %i", \
     function, \
     arguments->count, \
-    expected); \
+    expected);
 
 // lisp-value generic instance operations
 void  lval_del(lval* v);
@@ -78,11 +78,13 @@ lval* lval_sym(char* s);
 lval* lval_qexpr(void);
 lval* lval_sexpr(void);
 lval* lval_fun(lbuiltin fn);
+lval* lval_lambda(lval* formals, lval* body);
 
 // environment instance operations
 lenv* lenv_new(void);
 lval* lenv_get(lenv* env, lval* key);
 void  lenv_put(lenv* env, lval* key, lval* value);
+void  lenv_def(lenv* env, lval* key, lval* value);
 void  lenv_del(lenv* env);
 lenv* lenv_copy(lenv* org);
 
