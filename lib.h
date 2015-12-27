@@ -15,8 +15,11 @@ lval* builtin_exit(lenv* env, lval* a);
 lval* builtin_exists(lenv* env, lval* a);
 
 // comparisons
+lval* builtin_compare(lenv* env, lval* a, char *op);
 lval* builtin_gt(lenv* env, lval* a);
 lval* builtin_lt(lenv* env, lval* a);
+lval* builtin_eq(lenv* env, lval* a);
+lval* builtin_neq(lenv* env, lval* a);
 
 // control structures
 lval* builtin_if(lenv* env, lval* a);

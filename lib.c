@@ -130,58 +130,106 @@ lval* builtin_max(lenv* env, lval* a) {
   return x;
 }
 
-lval* builtin_gt(lenv* env, lval* a) {
-  LASSERT_ARITY("gt", a, 2);
+lval* builtin_compare(lenv* env, lval* a, char *op) {
+  LASSERT_ARITY(op, a, 2);
 
   if (a->cell[0]->type == LVAL_NUM) {
     lval* x = lval_pop(a, 0);
-  }
-  if (a->cell[0]->type == LVAL_SYM) {
+
+  } else if (a->cell[0]->type == LVAL_SYM) {
     lval* x = lenv_get(env, lval_pop(a, 0));
 
     if (x->type != LVAL_NUM) {
-      lval* err = lval_err("Wrong argument type supplied to gt, expected %s got %s",
+      lval* err = lval_err("Wrong argument type supplied to '%s', expected %s got %s",
+                    op,
                     lval_human_name(LVAL_NUM),
                     lval_human_name(x->type));
 
       lval_del(x); lval_del(a);
       return err;
     }
+  } else {
+    lval* x = lval_pop(a, 0);
+
+    lval* err = lval_err("Wrong argument type supplied to '%s', expected %s got %s",
+                  op,
+                  lval_human_name(LVAL_NUM),
+                  lval_human_name(x->type));
+
+    lval_del(x); lval_del(a);
+    return err;
   }
 
   if (a->cell[0]->type == LVAL_NUM) {
     lval* y = lval_pop(a, 0);
-  }
-  if (a->cell[0]->type == LVAL_SYM) {
+
+  } else if (a->cell[0]->type == LVAL_SYM) {
     lval* y = lenv_get(env, lval_pop(a, 0));
 
     if (y->type != LVAL_NUM) {
-      lval* err = lval_err("Wrong argument type supplied to gt, expected %s got %s",
+      lval* err = lval_err("Wrong argument type supplied to '%s', expected %s got %s",
+                    op,
                     lval_human_name(LVAL_NUM),
                     lval_human_name(y->type));
 
       lval_del(x); lval_del(y); lval_del(a);
       return err;
     }
+  } else {
+    lval* y = lval_pop(a, 0);
+
+    lval* err = lval_err("Wrong argument type supplied to '%s', expected %s got %s",
+                  op,
+                  lval_human_name(LVAL_NUM),
+                  lval_human_name(y->type));
+
+    lval_del(x); lval_del(y); lval_del(a);
+    return err;
   }
 
   lval_del(a);
 
-  if (y->num > x->num) {
-    lval_del(x);
-    return y;
-  } else {
-    lval_del(x);
-    return y;
-  }
+  // equals and it equals, true
+  if ((strcmp(op, "==") == 0) && (x->num == y->num))  { lval* b = lval_bool(1); }
+  // equals and it doesnt equal, false
+  if ((strcmp(op, "==") == 0) && (x->num != y->num))  { lval* b = lval_bool(0); }
+  // doesn't equal and it doesnt equal, true
+  if ((strcmp(op, "!=") == 0) && (x->num != y->num))  { lval* b = lval_bool(1); }
+  // doesn't equal and it does equal, false
+  if ((strcmp(op, "!=") == 0) && (x->num == y->num))  { lval* b = lval_bool(0); }
+
+  // gt and is gt, true
+  if ((strcmp(op, ">") == 0) && (x->num > y->num))  { lval* b = lval_bool(1); }
+  // gt and is not gt, false
+  if ((strcmp(op, ">") == 0) && (x->num < y->num))  { lval* b = lval_bool(0); }
+
+  // lt and is lt, true
+  if ((strcmp(op, "<") == 0) && (x->num < y->num))  { lval* b = lval_bool(1); }
+  // lt and is not lt, false
+  if ((strcmp(op, "<") == 0) && (x->num > y->num))  { lval* b = lval_bool(0); }
+
+  lval_del(x);
+  lval_del(y);
+
+  return b;
 }
 
+lval* builtin_gt(lenv* env, lval* a) {
+  return builtin_compare(env, a, ">");
+}
 lval* builtin_lt(lenv* env, lval* a) {
-
+  return builtin_compare(env, a, "<");
 }
-lval* builtin_if(lenv* env, lval* a) {
-
+lval* builtin_eq(lenv* env, lval* a) {
+  return builtin_compare(env, a, "==");
 }
+lval* builtin_neq(lenv* env, lval* a) {
+  return builtin_compare(env, a, "!=");
+}
+
+// lval* builtin_if(lenv* env, lval* a) {
+//
+// }
 
 lval* builtin_def(lenv* env, lval* a) {
   return builtin_var(env, a, "def");

@@ -3,13 +3,16 @@ struct lenv;
 typedef struct lval lval;
 typedef struct lenv lenv;
 
-enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_FUN, LVAL_SIG, LVAL_SEXPR, LVAL_QEXPR };
+enum { LVAL_NUM, LVAL_BOOL, LVAL_ERR, LVAL_SYM, LVAL_FUN, LVAL_SIG, LVAL_SEXPR, LVAL_QEXPR };
 
 typedef lval*(*lbuiltin)(lenv*, lval*);
 
 struct lval {
   int type;
   long num;
+
+  // boolean type
+  int boolean;
 
   // signals
   int sig;
@@ -73,6 +76,7 @@ lval* lval_copy(lval* org);
 
 // instance types
 lval* lval_num(long x);
+lval* lval_bool(int x);
 lval* lval_sig(int x);
 lval* lval_err(char* message, ...);
 lval* lval_sym(char* s);

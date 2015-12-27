@@ -16,6 +16,13 @@ void lval_print(lval* v) {
         lval_print(v->body);
       }
       break;
+    case LVAL_BOOL:
+      if (v->boolean == 0) {
+        printf("false");
+      } else {
+        printf("true");
+      }
+      break;
     case LVAL_NUM: printf("%li", v->num); break;
     case LVAL_SYM: printf("%s", v->sym); break;
     case LVAL_ERR: printf("%s", v->err); break;
@@ -47,6 +54,7 @@ char* lval_human_name(int t) {
   switch(t) {
     case LVAL_FUN: return "function";
     case LVAL_NUM: return "number";
+    case LVAL_BOOL: return "boolean";
     case LVAL_ERR: return "error";
     case LVAL_SYM: return "symbol";
     case LVAL_SEXPR: return "symbolic expression";
