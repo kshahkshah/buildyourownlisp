@@ -116,6 +116,7 @@ lval* lval_copy(lval* org) {
       if (org->builtin) {
         dup->builtin = org->builtin;
       } else {
+        dup->builtin = NULL;
         dup->env = lenv_copy(org->env);
         dup->formals = lval_copy(org->formals);
         dup->body = lval_copy(org->body);

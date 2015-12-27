@@ -49,9 +49,10 @@ struct lenv {
 // variable number of arguments in formatting a message
 #define LASSERT_TYPE(function, parent, index, expected) \
   LASSERT(parent, parent->cell[index]->type == expected, \
-    "Function '%s', passed an unexpected type, you passed a %s when a %s was expected", \
+    "Function '%s', passed an unexpected type, you passed a %s at argument index %i when a %s was expected", \
     function, \
     lval_human_name(parent->cell[index]->type), \
+    index, \
     lval_human_name(expected));
 
 #define LASSERT_ARITY(function, arguments, expected) \

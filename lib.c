@@ -296,7 +296,7 @@ lval* builtin_lambda(lenv* env, lval* a) {
 
   // gets copies of the required formal arguments and body
   lval *formals = lval_pop(a, 0);
-  lval *body = lval_pop(a, 1);
+  lval *body = lval_pop(a, 0);
   // kill what was passed in
   lval_del(a);
 
