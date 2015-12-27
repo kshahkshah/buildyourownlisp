@@ -2,7 +2,7 @@ lval* builtin_head(lenv* env, lval* a);
 lval* builtin_join(lenv* env, lval* a);
 lval* builtin_cons(lenv* env, lval* a);
 lval* builtin_tail(lenv* env, lval* a);
-lval* builtin_list(lenv* env, lval* a);
+lval* builtin_quote(lenv* env, lval* a);
 lval* builtin_eval(lenv* env, lval* a);
 lval* builtin_min(lenv* env, lval* a);
 lval* builtin_max(lenv* env, lval* a);

@@ -170,6 +170,31 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
     }
 
     lval* ref = lval_pop(fn->formals, 0);
+
+    // handle rest operator "&" arguments
+    // there needs to be at least formal left, to which we assign the rest of the arguments
+    if ((fn->formals->count > 0) && (strcmp(ref->sym, "&") == 0)) {
+
+      // also,
+      if (fn->formals->count != 2) {
+        lval_del(args);
+        return lval_err("arguments supplied to function '%s' are incorrect", fn->sym);
+      }
+
+      // copied->edited this bit out since it was more efficient
+      // just pop off the rest of the formals
+      lval* nref = lval_pop(fn->formals, 0);
+      // just switch the type to quoted expression, how nice, no need to make dups
+      lenv_put(fn->env, nref, builtin_quote(env, args));
+
+      // then cleanup
+      lval_del(nref);
+      lval_del(ref);
+      break;
+    }
+
+    // defined arguments (non-rest operator)
+
     lval* val = lval_pop(args, 0);
 
     // place into the functions local environment
@@ -180,10 +205,45 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
     lval_del(val);
   }
 
+  // before we return a new expression or evaluate this call
+  // &, the spread operator might be in the formal list,
+  // no variable args were given, so pop off that formal
+  // and give it an empty {} as it's value so it receives
+  // an expected type
+  if (fn->formals->count > 0 && strcmp(fn->formals->cell[0]->sym, "&") == 0) {
+
+    // also prevent people from defining invalid functions, well, sort of...
+    //
+    // basically you can define this but if you try to execute it, it'll tell you
+    // your function definition was wrong because it's ambiguous
+    // we don't know how to map m arguments to n symbols arbitrarily.
+    // therefore only one symbol can follow the rest operator
+    if (fn->formals->count != 2) {
+      return lval_err("Function format invalid. Symbol '&' not followed by single symbol.");
+    }
+
+    // now is the the actual case of, I just didn't have any variable arguments
+    // remove the '&'
+    lval_del(lval_pop(fn->formals, 0));
+
+    // Take next formal which is symbol representing the rest of the args
+    lval* ref = lval_pop(fn->formals, 0);
+
+    // make an empty val for it
+    lval* val = lval_qexpr();
+
+    // store a copy of it in the environment
+    lenv_put(fn->env, ref, val);
+
+    // free the originals
+    lval_del(ref);
+    lval_del(val);
+  }
+
   // everything is bound at this point, clean this up
   lval_del(args);
 
-  // now actually evaluate
+  // now actually evaluate, if we can
   if(fn->formals->count == 0) {
     // we're going to create a new sexpr here,
     // and in-place add a copy of the function body as it's first argument
@@ -193,7 +253,7 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
     lval* newexpr = lval_add(lval_sexpr(), lval_copy(fn->body));
     return builtin_eval(fn->env, newexpr);
 
-  // or return a new expression
+  // or return a new expression since we can't evaluate yet
   } else {
     // return a copy of
     return lval_copy(fn);

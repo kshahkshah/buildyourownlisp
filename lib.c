@@ -48,7 +48,9 @@ lval* builtin_join(lenv* env, lval* a) {
   return x;
 }
 
-// straight copied
+//
+// removes the first item of a quoted expression
+//
 lval* builtin_tail(lenv* env, lval* a) {
   LASSERT(a, a->count == 1,
     "Function 'tail' passed too many arguments!");
@@ -62,7 +64,10 @@ lval* builtin_tail(lenv* env, lval* a) {
   return v;
 }
 
-lval* builtin_list(lenv* env, lval* a) {
+//
+// changes the type of an lval to a quoted expression
+//
+lval* builtin_quote(lenv* env, lval* a) {
   a->type = LVAL_QEXPR;
   return a;
 }
