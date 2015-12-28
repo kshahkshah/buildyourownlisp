@@ -52,9 +52,10 @@ void lval_del(lval* v) {
       }
     case LVAL_NUM: break;
 
-    // we have to free the error message / symbol
+    // we have to free the error message / symbol / string
     case LVAL_ERR: free(v->err); break;
     case LVAL_SYM: free(v->sym); break;
+    case LVAL_STR: free(v->str); break;
 
     // release the cells
     case LVAL_QEXPR:
@@ -134,6 +135,10 @@ lval* lval_copy(lval* org) {
     case LVAL_SYM:
       dup->sym = malloc(strlen(org->sym) + 1);
       strcpy(dup->sym, org->sym);
+      break;
+    case LVAL_STR:
+      dup->str = malloc(strlen(org->str) + 1);
+      strcpy(dup->str, org->str);
       break;
     case LVAL_ERR:
       dup->err = malloc(strlen(org->err) + 1);

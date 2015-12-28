@@ -149,6 +149,7 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "eval", builtin_eval);
   lenv_add_builtin(e, "exists", builtin_exists);
   lenv_add_builtin(e, "locals", builtin_locals);
+  lenv_add_builtin(e, "type", builtin_type);
   lenv_add_builtin(e, "functions", builtin_functions);
   lenv_add_builtin(e, "exit", builtin_exit);
   lenv_add_builtin(e, "lambda", builtin_lambda);

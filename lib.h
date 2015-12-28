@@ -10,6 +10,7 @@ lval* builtin_nth(lenv* env, lval* a);
 lval* builtin_length(lenv* env, lval* a);
 
 lval* builtin_locals(lenv* env, lval* a);
+lval* builtin_type(lenv* env, lval* a);
 lval* builtin_functions(lenv* env, lval* a);
 
 lval* builtin_exit(lenv* env, lval* a);

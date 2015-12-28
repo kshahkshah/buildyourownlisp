@@ -3,34 +3,45 @@ struct lenv;
 typedef struct lval lval;
 typedef struct lenv lenv;
 
-enum { LVAL_NUM, LVAL_BOOL, LVAL_ERR, LVAL_SYM, LVAL_FUN, LVAL_SIG, LVAL_SEXPR, LVAL_QEXPR };
+enum { LVAL_NUM, LVAL_BOOL, LVAL_ERR, LVAL_SYM, LVAL_STR,
+       LVAL_FUN, LVAL_SIG, LVAL_SEXPR, LVAL_QEXPR };
 
 typedef lval*(*lbuiltin)(lenv*, lval*);
 
 struct lval {
+  // one of the enums, duh
   int type;
+
+  // numbers
   long num;
 
-  // boolean type
+  // boolean type, 0 or 1
   int boolean;
 
-  // signals
+  // signals, should be 0-9
   int sig;
 
-  // we need a place to record string data...
+  // error messages
   char *err;
+
+  // symbol references
   char *sym;
 
-  // functions
+  // strings
+  char *str;
+
+  // builtin functions
   lbuiltin builtin;
+
+  // user defined functions
   lenv* env;
   lval* formals;
   lval* body;
 
-  // count is the list length of an s-expression
+  // count is the list length of a s or q expression
   int count;
 
-  // cell points to other list values' pointers
+  // cell points to other lval pointers
   struct lval** cell;
 };
 
@@ -81,6 +92,7 @@ lval* lval_bool(int x);
 lval* lval_sig(int x);
 lval* lval_err(char* message, ...);
 lval* lval_sym(char* s);
+lval* lval_str(char* s);
 lval* lval_qexpr(void);
 lval* lval_sexpr(void);
 lval* lval_fun(lbuiltin fn);

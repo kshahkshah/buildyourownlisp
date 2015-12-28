@@ -435,6 +435,14 @@ lval* builtin_locals(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_type(lenv* env, lval* a) {
+  LASSERT_ARITY("type", a, 1);
+  lval* str = lval_str(lval_human_name(a->cell[0]->type));
+  lval_del(a);
+
+  return str;
+}
+
 lval* builtin_functions(lenv* env, lval* a) {
   // we might as well use the empty qexpr which was passed to us...
 

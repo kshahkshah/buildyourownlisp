@@ -25,6 +25,7 @@ void lval_print(lval* v) {
       break;
     case LVAL_NUM: printf("%li", v->num); break;
     case LVAL_SYM: printf("%s", v->sym); break;
+    case LVAL_STR: printf("%s", v->str); break;
     case LVAL_ERR: printf("%s", v->err); break;
     case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
     case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
@@ -57,6 +58,7 @@ char* lval_human_name(int t) {
     case LVAL_BOOL: return "boolean";
     case LVAL_ERR: return "error";
     case LVAL_SYM: return "symbol";
+    case LVAL_STR: return "string";
     case LVAL_SEXPR: return "symbolic expression";
     case LVAL_QEXPR: return "quoted expression";
     default: return "Unknown";
