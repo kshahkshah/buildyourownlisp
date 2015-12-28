@@ -21,7 +21,7 @@ lval* lval_num(long x) {
   return v;
 }
 
-lval* lval_boolean(int x) {
+lval* lval_bool(int x) {
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_BOOL;
   v->boolean = x;
