@@ -74,6 +74,10 @@ int main(int argc, char** argv) {
   lenv* env = lenv_new();
   lenv_add_builtins(env);
 
+  // add some shortcuts too;
+  lenv_def(env, lval_sym("true"), lval_bool(1));
+  lenv_def(env, lval_sym("false"), lval_bool(0));
+
   int no_exit_signal = 1;
 
   /* In a never ending loop */

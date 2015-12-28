@@ -125,6 +125,12 @@ lval* lval_copy(lval* org) {
     case LVAL_NUM:
       dup->num = org->num;
       break;
+    case LVAL_SIG:
+      dup->sig = org->sig;
+      break;
+    case LVAL_BOOL:
+      dup->boolean = org->boolean;
+      break;
     case LVAL_SYM:
       dup->sym = malloc(strlen(org->sym) + 1);
       strcpy(dup->sym, org->sym);
