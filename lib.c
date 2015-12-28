@@ -84,6 +84,11 @@ lval* builtin_cons(lenv* env, lval* args) {
   return list;
 }
 
+lval* builtin_if(lenv* env, lval* a) {
+  LASSERT_ARITY("eval", a, 1);
+  LASSERT_TYPE("eval", a, 0, LVAL_QEXPR);
+}
+
 // switch from QEXPR -> SEXPR and evaluate a child
 lval* builtin_eval(lenv* env, lval* a) {
   LASSERT_ARITY("eval", a, 1);
@@ -177,16 +182,18 @@ lval* builtin_gt(lenv* env, lval* a) {
 lval* builtin_lt(lenv* env, lval* a) {
   return builtin_compare(env, a, "<");
 }
+lval* builtin_gte(lenv* env, lval* a) {
+  return builtin_compare(env, a, ">=");
+}
+lval* builtin_lte(lenv* env, lval* a) {
+  return builtin_compare(env, a, "<=");
+}
 lval* builtin_eq(lenv* env, lval* a) {
   return builtin_compare(env, a, "==");
 }
 lval* builtin_neq(lenv* env, lval* a) {
   return builtin_compare(env, a, "!=");
 }
-
-// lval* builtin_if(lenv* env, lval* a) {
-//
-// }
 
 lval* builtin_def(lenv* env, lval* a) {
   return builtin_var(env, a, "def");

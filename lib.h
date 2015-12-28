@@ -18,6 +18,8 @@ lval* builtin_exists(lenv* env, lval* a);
 lval* builtin_compare(lenv* env, lval* a, char *op);
 lval* builtin_gt(lenv* env, lval* a);
 lval* builtin_lt(lenv* env, lval* a);
+lval* builtin_gte(lenv* env, lval* a);
+lval* builtin_lte(lenv* env, lval* a);
 lval* builtin_eq(lenv* env, lval* a);
 lval* builtin_neq(lenv* env, lval* a);
 
