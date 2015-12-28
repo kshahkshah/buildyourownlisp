@@ -6,6 +6,20 @@
 #include "repl.h"
 #include "lib.h"
 
+//
+//
+// create types
+//
+//
+
+//
+// changes the type of an lval to a quoted expression
+//
+lval* builtin_quote(lenv* env, lval* a) {
+  a->type = LVAL_QEXPR;
+  return a;
+}
+
 // straight copied then modified
 lval* builtin_head(lenv* env, lval* a) {
   LASSERT_ARITY("head", a, 1);
@@ -53,14 +67,6 @@ lval* builtin_tail(lenv* env, lval* a) {
   lval* v = lval_take(a, 0);
   lval_del(lval_pop(v, 0));
   return v;
-}
-
-//
-// changes the type of an lval to a quoted expression
-//
-lval* builtin_quote(lenv* env, lval* a) {
-  a->type = LVAL_QEXPR;
-  return a;
 }
 
 lval* builtin_nth(lenv* env, lval* a) {
