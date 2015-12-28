@@ -171,6 +171,8 @@ int lval_true(lval* val) {
 //
 //
 lval* lval_call(lenv* env, lval* fn, lval* args) {
+
+
   // immediately return builtin functions, thats easy
   if (fn->builtin) {
     return fn->builtin(env, args);
@@ -309,7 +311,7 @@ lval* lval_eval_sexpr(lenv* env, lval* expr) {
   // single expr, return the inner
   if (expr->count == 1) { return lval_take(expr, 0); }
 
-  // validate syntax, the first element must as always be an function
+  // validate syntax, the first element must as always be a function
   lval* fn = lval_pop(expr, 0);
 
   if (fn->type != LVAL_FUN) {
@@ -319,7 +321,7 @@ lval* lval_eval_sexpr(lenv* env, lval* expr) {
     return err;
   }
 
-  // Actually evaluate
+  // Actually call the expression
   lval* result = lval_call(env, fn, expr);
 
   // free the operand

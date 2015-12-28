@@ -64,8 +64,10 @@ lval* builtin_quote(lenv* env, lval* a) {
 }
 
 lval* builtin_length(lenv* env, lval* a) {
-  lval* x = lval_num(a->count);
-  return x;
+  LASSERT_ARITY("length", a, 1);
+  LASSERT_TYPE("length", a, 0, LVAL_QEXPR);
+
+  return lval_num(a->cell[0]->count);
 }
 
 lval* builtin_cons(lenv* env, lval* args) {
@@ -103,13 +105,13 @@ lval* builtin_if(lenv* env, lval* a) {
     lval_del(lval_pop(a, 0));
 
     // there should only be one argument left at this point if any
-    if (a->count > 1) { 
+    if (a->count > 1) {
       lval_del(a);
-      return lval_err("Too many argument provided to if"); 
+      return lval_err("Too many argument provided to if");
     }
 
     // if there is another left, then evaluate it
-    if (a->count == 1) { 
+    if (a->count == 1) {
       lval* x = lval_pop(a, 0);
       lval_del(a);
       return lval_eval(env, x);
