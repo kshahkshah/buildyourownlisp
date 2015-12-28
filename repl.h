@@ -73,6 +73,7 @@ lval* lval_pop(lval* expression, int index);
 lval* lval_unshift(lval* list, lval* incoming);
 lval* lval_take(lval* val, int index);
 lval* lval_copy(lval* org);
+int lval_true(lval* val);
 
 // instance types
 lval* lval_num(long x);

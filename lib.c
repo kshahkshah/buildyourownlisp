@@ -85,8 +85,39 @@ lval* builtin_cons(lenv* env, lval* args) {
 }
 
 lval* builtin_if(lenv* env, lval* a) {
-  LASSERT_ARITY("eval", a, 1);
-  LASSERT_TYPE("eval", a, 0, LVAL_QEXPR);
+
+  lval* condition = lval_eval(env, lval_pop(a, 0));
+
+  if (lval_true(condition)) {
+
+    // free the condition, pop off the block to evaluate, delete the remaining arguments
+    lval_del(condition);
+    lval* x = lval_pop(a, 0);
+    lval_del(a);
+
+    return lval_eval(env, x);
+
+  } else {
+    // then remove the first two arguments, the condition and the if statement
+    lval_del(condition);
+    lval_del(lval_pop(a, 0));
+
+    // there should only be one argument left at this point if any
+    if (a->count > 1) { 
+      lval_del(a);
+      return lval_err("Too many argument provided to if"); 
+    }
+
+    // if there is another left, then evaluate it
+    if (a->count == 1) { 
+      lval* x = lval_pop(a, 0);
+      lval_del(a);
+      return lval_eval(env, x);
+    }
+
+    // not gt 1 not == 1 must be 0, return false
+    return lval_bool(0);
+  }
 }
 
 // switch from QEXPR -> SEXPR and evaluate a child

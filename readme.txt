@@ -23,3 +23,10 @@ fun {pack f & xs} {f xs}
 
 def {uncurry} pack
 def {curry} unpack
+
+def {x} 4
+def {y} 8
+
+
+# THIS SEGFAULTS!!!
+fun {mean x & y} {/ (curry + (cons x y)) (length cons(quote(x) y))}

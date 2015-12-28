@@ -147,6 +147,24 @@ lval* lval_copy(lval* org) {
   return dup;
 }
 
+// LOGIC
+
+// I choose to define every non-false, non-nil value as true
+int lval_true(lval* val) {
+  switch (val->type) {
+    case LVAL_FUN:
+    case LVAL_NUM:
+    case LVAL_SYM:
+    case LVAL_SEXPR:
+    case LVAL_QEXPR:
+      return 1;
+    case LVAL_BOOL:
+      return val->boolean;
+    break;
+  }
+  return 0;
+}
+
 //
 //
 // EVALUATION
