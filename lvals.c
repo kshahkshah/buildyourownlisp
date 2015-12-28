@@ -185,8 +185,8 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
   while(args->count) {
     if (fn->formals->count == 0) {
       lval_del(args);
-      return lval_err("function '%s' passed too many arguments, %i for %i",
-               fn->sym, given, total);
+      return lval_err("function passed too many arguments, %i for %i",
+               given, total);
     }
 
     lval* ref = lval_pop(fn->formals, 0);
@@ -198,7 +198,7 @@ lval* lval_call(lenv* env, lval* fn, lval* args) {
       // also,
       if (fn->formals->count != 2) {
         lval_del(args);
-        return lval_err("arguments supplied to function '%s' are incorrect", fn->sym);
+        return lval_err("arguments supplied to function are incorrect");
       }
 
       // copied->edited this bit out since it was more efficient

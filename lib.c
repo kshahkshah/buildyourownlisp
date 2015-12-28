@@ -63,11 +63,35 @@ lval* builtin_quote(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_nth(lenv* env, lval* a) {
+  LASSERT_ARITY("length", a, 2);
+  LASSERT_TYPE("length", a, 0, LVAL_NUM);
+  LASSERT_TYPE("length", a, 1, LVAL_QEXPR);
+
+  // make sure it can exists
+  if (a->cell[1]->count < a->cell[0]->num) {
+    lval* err = lval_err("out of bounds error tried to get list"
+                  "item at index %i but length is only %i",
+                  a->cell[0]->num, a->cell[1]->count);
+
+    lval_del(a);
+    return err;
+  }
+
+  lval* nth = lval_copy(a->cell[1]->cell[a->cell[0]->num]);
+
+  lval_del(a);
+  return nth;
+}
+
 lval* builtin_length(lenv* env, lval* a) {
   LASSERT_ARITY("length", a, 1);
   LASSERT_TYPE("length", a, 0, LVAL_QEXPR);
 
-  return lval_num(a->cell[0]->count);
+  lval* n = lval_num(a->cell[0]->count);
+  lval_del(a);
+
+  return n;
 }
 
 lval* builtin_cons(lenv* env, lval* args) {
@@ -86,38 +110,86 @@ lval* builtin_cons(lenv* env, lval* args) {
   return list;
 }
 
+lval* builtin_and(lenv* env, lval* a) {
+  LASSERT_ARITY("&&", a, 2);
+
+  if (lval_true(a->cell[0]) && lval_true(a->cell[1])) {
+    lval_del(a);
+    return lval_bool(1);
+  } else {
+    lval_del(a);
+    return lval_bool(0);
+  }
+}
+
+lval* builtin_or(lenv* env, lval* a) {
+  LASSERT_ARITY("||", a, 2);
+
+  if (lval_true(a->cell[0]) || lval_true(a->cell[1])) {
+    lval_del(a);
+    return lval_bool(1);
+  } else {
+    lval_del(a);
+    return lval_bool(0);
+  }
+}
+
+lval* builtin_not(lenv* env, lval* a) {
+  LASSERT_ARITY("!", a, 1);
+
+  if (lval_true(a->cell[0])) {
+    lval_del(a);
+    return lval_bool(0);
+  } else {
+    lval_del(a);
+    return lval_bool(1);
+  }
+}
+
 lval* builtin_if(lenv* env, lval* a) {
 
-  lval* condition = lval_eval(env, lval_pop(a, 0));
+  // verify the if block
+  LASSERT_TYPE("if", a, 1, LVAL_QEXPR);
 
-  if (lval_true(condition)) {
+  if (a->count == 3) {
+    // verify the else block
+    LASSERT_TYPE("if", a, 2, LVAL_QEXPR);
+  }
 
-    // free the condition, pop off the block to evaluate, delete the remaining arguments
-    lval_del(condition);
+  if (a->count > 3) {
+    lval_del(a);
+    return lval_err("Too many argument provided to if");
+  }
+
+  // is the condition truthy?
+  if (lval_true(lval_pop(a, 0))) {
+
+    // pop off the block to evaluate
     lval* x = lval_pop(a, 0);
+
+    // mark it ready to be called
+    x->type = LVAL_SEXPR;
+
+    // delete the remaining arguments
     lval_del(a);
 
+    // return the evaluated block
     return lval_eval(env, x);
 
   } else {
-    // then remove the first two arguments, the condition and the if statement
-    lval_del(condition);
+    // falsy? then free if block
     lval_del(lval_pop(a, 0));
 
-    // there should only be one argument left at this point if any
-    if (a->count > 1) {
-      lval_del(a);
-      return lval_err("Too many argument provided to if");
-    }
-
-    // if there is another left, then evaluate it
+    // if there is an else block, evaluate that
     if (a->count == 1) {
       lval* x = lval_pop(a, 0);
+      x->type = LVAL_SEXPR;
       lval_del(a);
       return lval_eval(env, x);
     }
 
-    // not gt 1 not == 1 must be 0, return false
+    // if no else condition was provided, free the arguments and return false
+    lval_del(a);
     return lval_bool(0);
   }
 }

@@ -6,6 +6,7 @@ lval* builtin_quote(lenv* env, lval* a);
 lval* builtin_eval(lenv* env, lval* a);
 lval* builtin_min(lenv* env, lval* a);
 lval* builtin_max(lenv* env, lval* a);
+lval* builtin_nth(lenv* env, lval* a);
 lval* builtin_length(lenv* env, lval* a);
 
 lval* builtin_locals(lenv* env, lval* a);
@@ -25,6 +26,9 @@ lval* builtin_neq(lenv* env, lval* a);
 
 // control structures
 lval* builtin_if(lenv* env, lval* a);
+lval* builtin_and(lenv* env, lval* a);
+lval* builtin_or(lenv* env, lval* a);
+lval* builtin_not(lenv* env, lval* a);
 
 // defining a symbols
 lval* builtin_def(lenv* e, lval* a);

@@ -43,5 +43,6 @@ fun {unpack f xs} {eval (join (quote f) xs)}
 fun {pack f & xs} {f xs}
 def {uncurry} pack
 def {curry} unpack
-def {x} 4
-def {y} 8
+
+fun {ith i & items} {if (> i 0) { ith (- i 1) tail(items)} {head items}}
+ith 2 {0 1 2 3 4 5}

@@ -134,6 +134,9 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "!=", builtin_neq);
 
   lenv_add_builtin(e, "if", builtin_if);
+  lenv_add_builtin(e, "!", builtin_not);
+  lenv_add_builtin(e, "&&", builtin_and);
+  lenv_add_builtin(e, "||", builtin_or);
 
   lenv_add_builtin(e, "quote", builtin_quote);
   lenv_add_builtin(e, "head", builtin_head);
@@ -142,6 +145,7 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "join", builtin_join);
   lenv_add_builtin(e, "cons", builtin_cons);
   lenv_add_builtin(e, "length", builtin_length);
+  lenv_add_builtin(e, "nth", builtin_nth);
   lenv_add_builtin(e, "exists", builtin_exists);
   lenv_add_builtin(e, "locals", builtin_locals);
   lenv_add_builtin(e, "functions", builtin_functions);
