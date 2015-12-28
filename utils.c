@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "mpc.h"
 #include "repl.h"
 
 void lval_print(lval* v) {
@@ -25,7 +26,7 @@ void lval_print(lval* v) {
       break;
     case LVAL_NUM: printf("%li", v->num); break;
     case LVAL_SYM: printf("%s", v->sym); break;
-    case LVAL_STR: printf("%s", v->str); break;
+    case LVAL_STR: lval_print_str(v); break;
     case LVAL_ERR: printf("%s", v->err); break;
     case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
     case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
@@ -63,4 +64,16 @@ char* lval_human_name(int t) {
     case LVAL_QEXPR: return "quoted expression";
     default: return "Unknown";
   }
+}
+
+void lval_print_str(lval* v) {
+  /* Make a Copy of the string */
+  char* escaped = malloc(strlen(v->str)+1);
+  strcpy(escaped, v->str);
+  /* Pass it through the escape function */
+  escaped = mpcf_escape(escaped);
+  /* Print it between " characters */
+  printf("\"%s\"", escaped);
+  /* free the copied string */
+  free(escaped);
 }

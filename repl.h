@@ -118,3 +118,4 @@ void lval_print(lval* v);
 void lval_println(lval* v);
 void lval_expr_print(lval* v, char open, char close);
 char* lval_human_name(int t);
+void lval_print_str(lval* v);
