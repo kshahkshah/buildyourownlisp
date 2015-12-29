@@ -13,10 +13,28 @@ lval* lval_read_num(mpc_ast_t* tree) {
   return errno != ERANGE ? lval_num(x) : lval_err("invalid number");
 }
 
+lval* lval_read_str(mpc_ast_t* tree) {
+  // replace the " with a null terminator
+  tree->contents[strlen(tree->contents)-1] = '\0';
+
+  // copying this from the book, it's mpc stuff I'm not touching yet
+
+  /* Copy the string missing out the first quote character */
+  char* unescaped = malloc(strlen(tree->contents+1)+1);
+  strcpy(unescaped, tree->contents+1);
+  /* Pass through the unescape function */
+  unescaped = mpcf_unescape(unescaped);
+  /* Construct a new lval using the string */
+  lval* str = lval_str(unescaped);
+  /* Free the string and return */
+  free(unescaped);
+  return str;
+}
 
 lval* lval_read(mpc_ast_t* tree) {
   if (strstr(tree->tag, "number")) { return lval_read_num(tree); }
   if (strstr(tree->tag, "symbol")) { return lval_sym(tree->contents); }
+  if (strstr(tree->tag, "string")) { return lval_read_str(tree); }
 
   // empty lists are valid
   lval* x = NULL;
@@ -47,24 +65,28 @@ lval* lval_read(mpc_ast_t* tree) {
 int main(int argc, char** argv) {
 
   /* Create Some Parsers */
-  mpc_parser_t* Number = mpc_new("number");
-  mpc_parser_t* Symbol = mpc_new("symbol");
-  mpc_parser_t* Sexpr  = mpc_new("sexpr");
-  mpc_parser_t* Qexpr  = mpc_new("qexpr");
-  mpc_parser_t* Expr   = mpc_new("expr");
-  mpc_parser_t* Lispy  = mpc_new("lispy");
+  mpc_parser_t* Number  = mpc_new("number");
+  mpc_parser_t* Symbol  = mpc_new("symbol");
+  mpc_parser_t* String  = mpc_new("string");
+  mpc_parser_t* Comment = mpc_new("comment");
+  mpc_parser_t* Sexpr   = mpc_new("sexpr");
+  mpc_parser_t* Qexpr   = mpc_new("qexpr");
+  mpc_parser_t* Expr    = mpc_new("expr");
+  mpc_parser_t* Lispy   = mpc_new("lispy");
 
   /* Define them with the following Language */
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                                     \
-      number   : /-?[0-9]+/ ;                                             \
-      symbol   : /[a-zA-Z0-9_+\\-*\\/\\\\=<>|!&^\%]+/ ;                   \
-      qexpr    : '{' <expr>* '}' ;                                        \
-      sexpr    : '(' <expr>* ')' ;                                        \
-      expr     : <number> | <symbol> | <sexpr> | <qexpr>;                 \
-      lispy    : /^/ <expr>* /$/ ;                                        \
+    "                                                      \
+      number   : /-?[0-9]+/ ;                              \
+      symbol   : /[a-zA-Z0-9_+\\-*\\/\\\\=<>|!&^\%]+/ ;    \
+      string   : /\"(\\\\.|[^\"])*\"/ ;                    \
+      qexpr    : '{' <expr>* '}' ;                         \
+      sexpr    : '(' <expr>* ')' ;                         \
+      expr     : <number> | <string> | <symbol> |          \
+                 <sexpr> | <qexpr>;                        \
+      lispy    : /^/ <expr>* /$/ ;                         \
     ",
-    Number, Symbol, Sexpr, Qexpr, Expr, Lispy);
+    Number, Symbol, String, Sexpr, Qexpr, Expr, Lispy);
 
   /* Print Version and Exit Information */
   puts("Lispy Version 0.0.0.0.1");
@@ -116,7 +138,7 @@ int main(int argc, char** argv) {
   lenv_del(env);
 
   /* Undefine and Delete our Parsers */
-  mpc_cleanup(4, Number, Symbol, Qexpr, Sexpr, Expr, Lispy);
+  mpc_cleanup(4, Number, Symbol, String, Comment, Qexpr, Sexpr, Expr, Lispy);
 
   return 0;
 }
