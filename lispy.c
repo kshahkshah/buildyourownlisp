@@ -103,6 +103,24 @@ int main(int argc, char** argv) {
   lenv_def(env, lval_sym("true"), lval_bool(1));
   lenv_def(env, lval_sym("false"), lval_bool(0));
 
+  // iterate over files passed to us and load them before entering the repl...
+  if (argc >= 2) {
+    // first arg is the prog name
+    for (int i = 1; i < argc; i++) {
+      // let the mpc parser handle creating the string
+      lval* filename = lval_add(lval_sexpr(), lval_str(argv[i]));
+      // call load, which will will evaluate returning an lval
+      lval* result = builtin_load(env, filename);
+
+      // which we should spill out if an error, otherwise we just move on
+      if (result->type == LVAL_ERR) {
+        lval_println(result);
+      }
+      // release and remove on, lval_add
+      lval_del(result);
+    }
+  }
+
   int no_exit_signal = 1;
 
   /* In a never ending loop */
