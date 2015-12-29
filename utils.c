@@ -4,7 +4,8 @@
 #include <stdarg.h>
 
 #include "mpc.h"
-#include "repl.h"
+#include "lispy.h"
+#include "lib.h"
 
 void lval_print(lval* v) {
   switch (v->type) {

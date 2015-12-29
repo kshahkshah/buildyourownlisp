@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "repl.h"
+#include "mpc.h"
+#include "lispy.h"
 #include "lib.h"
 
 //

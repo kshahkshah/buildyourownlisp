@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "repl.h"
+#include "mpc.h"
+#include "lispy.h"
 #include "lib.h"
 
 lenv* lenv_new(void) {

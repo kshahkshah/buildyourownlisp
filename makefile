@@ -1,4 +1,4 @@
 repl:
-	cc -std=c99 -Wall lvals.c utils.c types.c lib.c env.c repl.c mpc.c -ledit -lm -o repl
+	cc -std=c99 -Wall mpc.c lvals.c utils.c types.c lib.c env.c lispy.c -ledit -lm -o lispy
 clean:
-	$(RM) repl
+	$(RM) lispy

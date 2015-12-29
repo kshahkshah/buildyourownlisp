@@ -3,7 +3,8 @@
 #include <editline/readline.h>
 
 #include "mpc.h"
-#include "repl.h"
+#include "lispy.h"
+#include "lib.h"
 
 lval* lval_read_num(mpc_ast_t* tree) {
   errno = 0;

@@ -1,3 +1,12 @@
+mpc_parser_t* Number; 
+mpc_parser_t* Symbol; 
+mpc_parser_t* String; 
+mpc_parser_t* Comment;
+mpc_parser_t* Sexpr;  
+mpc_parser_t* Qexpr;  
+mpc_parser_t* Expr; 
+mpc_parser_t* Lispy;
+
 struct lval;
 struct lenv;
 typedef struct lval lval;
@@ -75,6 +84,11 @@ struct lenv {
     function, \
     arguments->count, \
     expected);
+
+// parsing hooks
+lval* lval_read_num(mpc_ast_t* tree);
+lval* lval_read_str(mpc_ast_t* tree);
+lval* lval_read(mpc_ast_t* tree);
 
 // lisp-value generic instance operations
 void  lval_del(lval* v);

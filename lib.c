@@ -3,9 +3,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "repl.h"
-#include "lib.h"
 #include "mpc.h"
+#include "lispy.h"
+#include "lib.h"
 
 //
 //
