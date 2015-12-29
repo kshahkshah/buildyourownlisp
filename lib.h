@@ -49,3 +49,6 @@ lval* builtin_mod(lenv* e, lval* a);
 lval* builtin_exp(lenv* e, lval* a);
 //___triggers math
 lval* builtin_op(lenv* e, lval* a, char* op);
+
+// file io
+lval* builtin_load(lenv* e, lval* a);

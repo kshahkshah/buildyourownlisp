@@ -54,6 +54,7 @@ lval* lval_read(mpc_ast_t* tree) {
     if (strcmp(tree->children[i]->contents, "{") == 0) { continue; }
     if (strcmp(tree->children[i]->contents, "}") == 0) { continue; }
     if (strcmp(tree->children[i]->tag,  "regex") == 0) { continue; }
+    if (strstr(tree->children[i]->tag, "comment")) { continue; }
 
     // data, add it to the sexpr
     x = lval_add(x, lval_read(tree->children[i]));
@@ -69,8 +70,8 @@ int main(int argc, char** argv) {
   mpc_parser_t* Symbol  = mpc_new("symbol");
   mpc_parser_t* String  = mpc_new("string");
   mpc_parser_t* Comment = mpc_new("comment");
-  mpc_parser_t* Sexpr   = mpc_new("sexpr");
   mpc_parser_t* Qexpr   = mpc_new("qexpr");
+  mpc_parser_t* Sexpr   = mpc_new("sexpr");
   mpc_parser_t* Expr    = mpc_new("expr");
   mpc_parser_t* Lispy   = mpc_new("lispy");
 
@@ -80,13 +81,14 @@ int main(int argc, char** argv) {
       number   : /-?[0-9]+/ ;                              \
       symbol   : /[a-zA-Z0-9_+\\-*\\/\\\\=<>|!&^\%]+/ ;    \
       string   : /\"(\\\\.|[^\"])*\"/ ;                    \
+      comment  : /;[^\\r\\n]*/ ;                           \
       qexpr    : '{' <expr>* '}' ;                         \
       sexpr    : '(' <expr>* ')' ;                         \
       expr     : <number> | <string> | <symbol> |          \
-                 <sexpr> | <qexpr>;                        \
+                 <sexpr> | <qexpr> | <comment>;            \
       lispy    : /^/ <expr>* /$/ ;                         \
     ",
-    Number, Symbol, String, Sexpr, Qexpr, Expr, Lispy);
+    Number, Symbol, String, Comment, Qexpr, Sexpr, Expr, Lispy);
 
   /* Print Version and Exit Information */
   puts("Lispy Version 0.0.0.0.1");
