@@ -21,6 +21,18 @@ lval* builtin_quote(lenv* env, lval* a) {
   return a;
 }
 
+lval* builtin_error(lenv* e, lval* a) {
+  LASSERT_ARITY("error", a, 1);
+  LASSERT_TYPE("error", a, 0, LVAL_STR);
+
+  /* Construct Error from first argument */
+  lval* err = lval_err(a->cell[0]->str);
+
+  /* Delete arguments and return */
+  lval_del(a);
+  return err;
+}
+
 // straight copied then modified
 lval* builtin_head(lenv* env, lval* a) {
   LASSERT_ARITY("head", a, 1);
@@ -517,10 +529,34 @@ lval* builtin_load(lenv* e, lval* a) {
   LASSERT_ARITY("load", a, 1);
   LASSERT_TYPE("load", a, 0, LVAL_STR);
 
-  /* Parse File given by string name */
+  // create empty parsers
+  mpc_parser_t* Number  = mpc_new("number");
+  mpc_parser_t* Symbol  = mpc_new("symbol");
+  mpc_parser_t* String  = mpc_new("string");
+  mpc_parser_t* Comment = mpc_new("comment");
+  mpc_parser_t* Qexpr   = mpc_new("qexpr");
+  mpc_parser_t* Sexpr   = mpc_new("sexpr");
+  mpc_parser_t* Expr    = mpc_new("expr");
+  mpc_parser_t* Lispy   = mpc_new("lispy");
+
+  // fill the parsers with the lang
+  mpca_lang(MPCA_LANG_DEFAULT,
+    "                                                      \
+      number   : /-?[0-9]+/ ;                              \
+      symbol   : /[a-zA-Z0-9_+\\-*\\/\\\\=<>|!&^\%]+/ ;    \
+      string   : /\"(\\\\.|[^\"])*\"/ ;                    \
+      comment  : /;[^\\r\\n]*/ ;                           \
+      qexpr    : '{' <expr>* '}' ;                         \
+      sexpr    : '(' <expr>* ')' ;                         \
+      expr     : <number> | <string> | <symbol> |          \
+                 <sexpr> | <qexpr> | <comment>;            \
+      lispy    : /^/ <expr>* /$/ ;                         \
+    ",
+    Number, Symbol, String, Comment, Qexpr, Sexpr, Expr, Lispy);
+
   mpc_result_t r;
+
   if (mpc_parse_contents(a->cell[0]->str, Lispy, &r)) {
-    
     /* Read contents */
     lval* expr = lval_read(r.output);
     mpc_ast_delete(r.output);
@@ -537,10 +573,13 @@ lval* builtin_load(lenv* e, lval* a) {
     lval_del(expr);    
     lval_del(a);
     
+    mpc_cleanup(8, Number, Symbol, String, Comment, Qexpr, Sexpr, Expr, Lispy);
+
     /* Return empty list */
     return lval_sexpr();
     
   } else {
+
     /* Get Parse Error as String */
     char* err_msg = mpc_err_string(r.error);
     mpc_err_delete(r.error);
@@ -549,10 +588,26 @@ lval* builtin_load(lenv* e, lval* a) {
     lval* err = lval_err("Could not load Library %s", err_msg);
     free(err_msg);
     lval_del(a);
-    
+
+    mpc_cleanup(8, Number, Symbol, String, Comment, Qexpr, Sexpr, Expr, Lispy); 
+
     /* Cleanup and return error */
     return err;
   }
 
 }
 
+// straight copied
+lval* builtin_print(lenv* e, lval* a) {
+
+  /* Print each argument followed by a space */
+  for (int i = 0; i < a->count; i++) {
+    lval_print(a->cell[i]); putchar(' ');
+  }
+
+  /* Print a newline and delete arguments */
+  putchar('\n');
+  lval_del(a);
+
+  return lval_sexpr();
+}

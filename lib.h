@@ -1,8 +1,10 @@
+lval* builtin_quote(lenv* env, lval* a);
+lval* builtin_error(lenv* e, lval* a);
+
 lval* builtin_head(lenv* env, lval* a);
 lval* builtin_join(lenv* env, lval* a);
 lval* builtin_cons(lenv* env, lval* a);
 lval* builtin_tail(lenv* env, lval* a);
-lval* builtin_quote(lenv* env, lval* a);
 lval* builtin_eval(lenv* env, lval* a);
 lval* builtin_min(lenv* env, lval* a);
 lval* builtin_max(lenv* env, lval* a);
@@ -52,3 +54,5 @@ lval* builtin_op(lenv* e, lval* a, char* op);
 
 // file io
 lval* builtin_load(lenv* e, lval* a);
+
+lval* builtin_print(lenv* e, lval* a);

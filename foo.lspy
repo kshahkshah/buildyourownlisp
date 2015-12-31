@@ -1,1 +1,6 @@
-(+ 2 2)
+(def {fun} (lambda {args body} { def (head args) (lambda (tail args) body) }))
+(fun {unpack f xs} {eval (join (quote f) xs)})
+(fun {pack f & xs} {f xs})
+(def {uncurry} pack)
+(def {curry} unpack)
+383s3

@@ -54,6 +54,7 @@ void lenv_del(lenv* env) {
   free(env);
 }
 
+// returns a copy of the value given
 lval* lenv_get(lenv* env, lval* key) {
 
   // since we're not using a hash of any sort iterate over the entire thing! wheeeeeeeeeeeeeeeeeeeeeeeeee...n
@@ -121,6 +122,10 @@ void lenv_add_builtin(lenv* e, char* name, lbuiltin builtin) {
 }
 
 void lenv_add_builtins(lenv* e) {
+  lenv_add_builtin(e, "load",  builtin_load); 
+
+  lenv_add_builtin(e, "error", builtin_error);
+
   /* List Functions */
   lenv_add_builtin(e, "def",  builtin_def);
   lenv_add_builtin(e, "=",    builtin_put);
@@ -162,4 +167,7 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "/", builtin_div);
   lenv_add_builtin(e, "\%", builtin_mod);
   lenv_add_builtin(e, "^", builtin_exp);
+
+  lenv_add_builtin(e, "print", builtin_print);
+
 }
