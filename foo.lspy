@@ -3,4 +3,3 @@
 (fun {pack f & xs} {f xs})
 (def {uncurry} pack)
 (def {curry} unpack)
-383s3
