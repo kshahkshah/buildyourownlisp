@@ -1,0 +1,25 @@
+; define a user function factory 'fun' which uses a simpler syntax
+; from lambda, it takes two quoted expressions
+; the first is the signature {function-name arg-1 arg-2}
+; the second being the method body
+; 
+
+(def 
+  {fun} 
+  (lambda 
+    {args body} 
+    { def 
+      (head args) 
+      (lambda (tail args) body) 
+    }
+  )
+)
+
+; applies a method to the items of a quoted expression, reducing them
+(fun {unpack f xs} {eval (join (quote f) xs)})
+(fun {pack f & xs} {f xs})
+
+; aliases
+(def {uncurry} pack)
+(def {curry}   unpack)
+
